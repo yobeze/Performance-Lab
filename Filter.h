@@ -21,4 +21,15 @@ public:
   void info();
 };
 
+inline int Filter::getSize()
+{
+  return dim;
+}
+inline int Filter::getDivisor()
+{
+  return divisor;
+}
 #endif
+
+/* Code Motion
+void set_row(double *a, double *b, long i long n */
