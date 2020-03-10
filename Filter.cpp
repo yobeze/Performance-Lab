@@ -1,4 +1,5 @@
 #include "Filter.h"
+#include <omp.h>
 #include <iostream>
 
 Filter::Filter(int _dim)

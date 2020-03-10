@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "cs1300bmp.h"
 #include <iostream>
+#include <algorithm>
 #include <fstream>
 #include <stdlib.h>
 #include "Filter.h"
@@ -8,7 +9,6 @@
 using namespace std;
 
 #include "rdtsc.h"
-
 //
 // Forward declare the functions
 //
@@ -90,11 +90,8 @@ readFilter(string filename)
     exit(-1);
   }
 }
-
-
-double
-applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
-{
+  double applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
+  {
 
   long long cycStart, cycStop;
 
@@ -107,8 +104,10 @@ applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
   h = h - 1;
 
   float div = (1.0/(filter -> getDivisor()));
-    for(int row = 1; row < h; row++) {
-      for(int col = 1; col < w; col++) {
+    for(int row = 1; row < h; row++) 
+    {
+      for(int col = 1; col < w; col++) 
+      {
   // int plane = 0;
       output -> color[0][row][col] = 0;
       output -> color[1][row][col] = 0;
@@ -206,6 +205,7 @@ applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
 
     }
   }
+  
 
   cycStop = rdtscll();
   double diff = cycStop - cycStart;
@@ -213,8 +213,7 @@ applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
   fprintf(stderr, "Took %f cycles to process, or %f cycles per pixel\n",
 	  diff, diff / (output -> width * output -> height));
   return diffPerPixel;
-}
-
+  }
 /*
   int plane = 0;
   for(int plane = 0; plane < 3; plane++) {
