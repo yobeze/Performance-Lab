@@ -24,7 +24,8 @@ main(int argc, char **argv)
   }
 
   //
-  // Convert to C++ strings to simplify manipulation
+  // Convert
+   C++ strings to simplify manipulation
   //
   string filtername = argv[1];
 
@@ -90,110 +91,72 @@ readFilter(string filename)
     exit(-1);
   }
 }
-double applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
-{
+  double applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
+  {
 
-    long long cycStart, cycStop;
+  long long cycStart, cycStop;
 
-    cycStart = rdtscll();
-    //create local variable
-    cs1300bmp * __restrict local = input;
-    //Performing some calculations locally rather than using computing repeatedly
-    int w = output -> width = local -> width;
-    int h = output -> height = local -> height;
-    w = w - 1;
-    h = h - 1;
-    //size is constant
-    const short fooSize = filter -> getSize();
-    int filterArr[fooSize][fooSize];
-    
-    //array of filters locally stored
-    //holds x, y values
-    //processes and saves the values that were being multiplied inside main loop
-    #pragma omp parallel for
-    for(short i = 0; i < fooSize; i++)
-    {
-        for(short j = 0; j < fooSize; j++)
-        {
-            filterArr[i][j] = filter -> get(i, j);
-        }
-    }
-    //eliminates need for calling divisor repeatedly
-    float div = (1.0/(filter -> getDivisor()));
-    //Multithreading
-    #pragma omp parallel for
+  cycStart = rdtscll();
+  //create local var
+  cs1300bmp * __restrict local = input;
+  int w = output -> width = local -> width;
+  int h = output -> height = local -> height;
+  w = w - 1;
+  h = h - 1;
+
+  float div = (1.0/(filter -> getDivisor()));
     for(int row = 1; row < h; row++) 
     {
       for(int col = 1; col < w; col++) 
       {
-        // int plane = 0;
-        output -> color[0][row][col] = 0;
-        output -> color[1][row][col] = 0;
-        output -> color[2][row][col] = 0;
+  // int plane = 0;
+      output -> color[0][row][col] = 0;
+      output -> color[1][row][col] = 0;
+      output -> color[2][row][col] = 0;
 
-        for (int j = 0; j < 3; j++) 
-        { //getSize will always be 3
-            for (int i = 0; i < 3; i++) 
-            {
-                //replaces need for filter -> get(i,j)
-                //storing filter in xy vs accessing/computing it yields more efficient
-                short xy = filterArr[i][j];
-                output -> color[0][row][col] = output -> color[0][row][col] + (local -> color[0][row + i - 1][col + j - 1] * xy);
-                output -> color[1][row][col] = output -> color[1][row][col] + (local -> color[1][row + i - 1][col + j - 1] * xy);
-                output -> color[2][row][col] = output -> color[2][row][col] + (local -> color[2][row + i - 1][col + j - 1] * xy);
-            }
-        } 
- 
-        if (div != 1)
-        {
-          output -> color[0][row][col] *= div;  
-
-          output -> color[1][row][col] *= div;
-
-          output -> color[2][row][col] *= div;
+      for (int j = 0; j < 3; j++) { //getSize will always be 3
+        for (int i = 0; i < 3; i++) { 
+          output -> color[0][row][col]
+            = output -> color[0][row][col] //
+            + (local -> color[0][row + i - 1][col + j - 1] 
+         * filter -> get(i, j) );
+            output -> color[1][row][col]
+            = output -> color[1][row][col]
+            + (local -> color[1][row + i - 1][col + j - 1] 
+         * filter -> get(i, j) );
+            output -> color[2][row][col]
+            = output -> color[2][row][col]
+            + (local -> color[2][row + i - 1][col + j - 1] 
+         * filter -> get(i, j) );
         }
-        
-        //ternary operations take less time to compute than if statements
-        //
-        if ( output -> color[0][row][col]  < 0 ) 
-        {
-          output -> color[0][row][col] = 0;
-        }  
-        if ( output -> color[1][row][col]  < 0 ) 
-        {
-          output -> color[1][row][col] = 0;
-        }  
-        if ( output -> color[2][row][col]  < 0 ) 
-        {
-          output -> color[2][row][col] = 0;
-        }
-        if ( output -> color[0][row][col]  > 255 ) 
-        { 
-          output -> color[0][row][col] = 255;
-        }
-        if ( output -> color[1][row][col]  > 255 ) 
-        { 
-          output -> color[1][row][col] = 255;
-        }
-        if ( output -> color[2][row][col]  > 255 ) 
-        { 
-          output -> color[2][row][col] = 255;
-        }
-    }
-  }
-  //////////////////////////////////////
+      }
+    if (div != 1)
+    {
+      output -> color[0][row][col] *= div;  
     
+      output -> color[1][row][col] *= div;
+        
+      output -> color[2][row][col] *= div;
+    }
+    
+    if ( output -> color[0][row][col]  < 0 ) {
+      output -> color[0][row][col] = 0;
+    }  if ( output -> color[1][row][col]  < 0 ) {
+      output -> color[1][row][col] = 0;
+    }  if ( output -> color[2][row][col]  < 0 ) {
+      output -> color[2][row][col] = 0;
+    }
 
-  cycStop = rdtscll();
-  double diff = cycStop - cycStart;
-  double diffPerPixel = diff / (output -> width * output -> height);
-  fprintf(stderr, "Took %f cycles to process, or %f cycles per pixel\n",
-	  diff, diff / (output -> width * output -> height));
-  return diffPerPixel;
-}
-/*
-    //////////////////////
-    // /////////////////// 2nd iteration
+    if ( output -> color[0][row][col]  > 255 ) { 
+      output -> color[0][row][col] = 255;
+    }
+      if ( output -> color[1][row][col]  > 255 ) { 
+      output -> color[1][row][col] = 255;
+    }
+      if ( output -> color[2][row][col]  > 255 ) { 
+      output -> color[2][row][col] = 255;
+    }
+  // /////////////////// 2nd iteration
   // plane = 1;
   //   output -> color[plane][row][col] = 0;
 
@@ -240,7 +203,19 @@ double applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
   // if ( output -> color[plane][row][col]  > 255 ) { 
   //   output -> color[plane][row][col] = 255;
   // }
-  /////////////////////
+
+    }
+  }
+  
+
+  cycStop = rdtscll();
+  double diff = cycStop - cycStart;
+  double diffPerPixel = diff / (output -> width * output -> height);
+  fprintf(stderr, "Took %f cycles to process, or %f cycles per pixel\n",
+	  diff, diff / (output -> width * output -> height));
+  return diffPerPixel;
+  }
+/*
   int plane = 0;
   for(int plane = 0; plane < 3; plane++) {
 
@@ -265,31 +240,5 @@ double applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
   if ( output -> color[plane][row][col]  > 255 ) { 
     output -> color[plane][row][col] = 255;
   }
-      }
-      /////////////////////////////////////////
-          for(int row = 1; row < h; row++) 
-    {
-      for(int col = 1; col < w; col++) 
-      {
-  // int plane = 0;
-      output -> color[0][row][col] = 0;
-      output -> color[1][row][col] = 0;
-      output -> color[2][row][col] = 0;
-
-      for (int j = 0; j < 3; j++) { //getSize will always be 3
-        for (int i = 0; i < 3; i++) { 
-          output -> color[0][row][col]
-            = output -> color[0][row][col] //
-            + (local -> color[0][row + i - 1][col + j - 1] 
-         * filter -> get(i, j) );
-            output -> color[1][row][col]
-            = output -> color[1][row][col]
-            + (local -> color[1][row + i - 1][col + j - 1] 
-         * filter -> get(i, j) );
-            output -> color[2][row][col]
-            = output -> color[2][row][col]
-            + (local -> color[2][row + i - 1][col + j - 1] 
-         * filter -> get(i, j) );
-        }
       }
 */

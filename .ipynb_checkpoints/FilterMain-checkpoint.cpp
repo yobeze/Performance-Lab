@@ -153,8 +153,7 @@ double applyFilter(class Filter *filter, cs1300bmp *input, cs1300bmp *output)
           output -> color[2][row][col] *= div;
         }
         
-        //ternary operations take less time to compute than if statements
-        //
+//         output -> color[0][row][col] = 
         if ( output -> color[0][row][col]  < 0 ) 
         {
           output -> color[0][row][col] = 0;
